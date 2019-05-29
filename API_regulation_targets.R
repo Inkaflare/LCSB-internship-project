@@ -267,6 +267,8 @@ clean_overlay_target_data <- function(target_data) {
   target_data <- as.data.frame(target_data)
   target_data[,2] <- as.numeric(paste(target_data[,2])) #transform up/downreg. values from factor into numeric values
   
+  target_data[,1] <- as.character(target_data[,1])
+  
   # #failsafe for keeping this column order (needed for the target counts function)
   # col_order <- c("Target", "value")
   # if("Drug" %in% colnames(target_data)) {
@@ -350,13 +352,8 @@ sn_overlay_data <- count_targets(sn_overlay_data)
 
 #I'm working with the substantia nigra overlay data for the res of the project, but you can also grab the data from the ageing brain overlay
 
-ab_overlay_id <- "7607" #id of the ageing brain overlay
-ab_overlay_data <- overlay_merge(ab_overlay_id, all_targets)
-ab_overlay_data <- clean_overlay_target_data(ab_overlay_data)
+# ab_overlay_id <- "7607" #id of the ageing brain overlay
+# ab_overlay_data <- overlay_merge(ab_overlay_id, all_targets)
+# ab_overlay_data <- clean_overlay_target_data(ab_overlay_data)
 
-#Saving to file
-setwd("C:/Users/David/Dropbox/Universiteitsdokumenter/Stage LCSB")
-save(sn_overlay_data, file = "sn_overlay_data.Rda")
-write.table(sn_overlay_data, file = "sn_overlay_data.tab", sep = "\t", quote = F, row.names = F)
 
-load("sn_overlay_data.Rda")

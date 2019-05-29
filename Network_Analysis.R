@@ -177,7 +177,7 @@ reactionsAnnotated <- add_element_details(reactions, elements)
 
 reaction_graph_list <- lapply(reactionsAnnotated, create_reaction_graph)
 
-plot(reaction_graph_list[[27]])
+# plot(reaction_graph_list[[27]])
 
 
 #Join the graphs into a single network
@@ -212,7 +212,7 @@ edge_density(joined_graph)
 diameter(joined_graph)
 
 #degree - cross-correlate with regulation targets?
-deg = degree(joined_graph, mode = "all")
+deg <- degree(joined_graph, mode = "all")
 
 
 hist(deg[!grepl("re[0-9]+", names(deg))], breaks=1:200-1, main="Histogram of node degree")
@@ -222,7 +222,6 @@ plot( x=0:max(deg), y=1-deg.dist, pch=19, cex=1.2, col="orange", xlab="Degree", 
 #targets sorted by degree + up/downreg value -> possibly interesting hub nodes + the drugs that apply to them
 sn_overlay_data$degree <- deg[sn_overlay_data$Target]
 sn_overlay_data <- sn_overlay_data[order(-sn_overlay_data$degree, na.last = NA),]
-
 
 
 #closeness - seems fairly pointless
@@ -238,7 +237,18 @@ sn_overlay_data$closeness <- closeness[sn_overlay_data$Target]
 betweenness <- betweenness(joined_graph)
 
 sn_overlay_data$betweenness <- betweenness[sn_overlay_data$Target]
-sn_overlay_data <- sn_overlay_data[order(-sn_overlay_data$betweenness, -abs(sn_overlay_data$value), na.last = NA),]
+# sn_overlay_data <- sn_overlay_data[order(-sn_overlay_data$betweenness, -abs(sn_overlay_data$value), na.last = NA),]
+
+#scale closeness and betweenness to have more reasonable values there instead of millions and millionths
+sn_overlay_data$closeness <- scale(sn_overlay_data$closeness)
+sn_overlay_data$betweenness <- scale(sn_overlay_data$betweenness)
+
+
+#create a table of quantiles for the network metrics I'm interested in
+centrality_quantile_table <- data.frame("Degree" = quantile(sn_overlay_data$degree, na.rm = T), 
+                                        "Betweenness" = quantile(sn_overlay_data$betweenness, na.rm = T), 
+                                        "Closeness" = quantile(sn_overlay_data$closeness, na.rm = T))
+
 
 
 #betweenness and degree plot
@@ -257,6 +267,9 @@ setwd("C:/Users/David/Dropbox/Universiteitsdokumenter/Stage LCSB")
 save(sn_overlay_data, file = "sn_overlay_data.Rda")
 write.table(sn_overlay_data, file = "sn_overlay_data.tab", sep = "\t", quote = F, row.names = F)
 
+
+#check whether the network is scale-free
+fit_power_law(degree(joined_graph_undir), xmin = 1)
 
 #finding subnetworks
 #turn into undirected network for community detection
@@ -342,3 +355,12 @@ cwt_list <- community_to_list(cwt)
 cwt_ids <- lapply(cwt_list, function(x) purrr::compact(lapply(x, get_entrez_ids)))
 
 
+
+
+
+#Saving to file after adding network centrality metrics
+setwd("C:/Users/David/Dropbox/Universiteitsdokumenter/Stage LCSB")
+save(sn_overlay_data, file = "sn_overlay_data.Rda")
+write.table(sn_overlay_data, file = "sn_overlay_data.tab", sep = "\t", quote = F, row.names = F)
+
+load("sn_overlay_data.Rda")
